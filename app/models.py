@@ -1,23 +1,21 @@
-from datetime import datetime, timedelta, timezone
+from datetime import datetime
+import json
 
-import jwt
-
-from flask import current_app, request, url_for
 from flask_sqlalchemy import SQLAlchemy
-from flask_login import LoginManager, UserMixin, AnonymousUserMixin
+from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
 
 
 db = SQLAlchemy()
-login_manager = LoginManager()
-login_manager.login_view = 'auth.login'
 
 class User(UserMixin, db.Model):
-    __tablename__ = 'users'
+    __tablename__ = 'user'
     id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String(64), unique=True, index=True)
     password_hash = db.Column(db.String(128))
     confirmed = db.Column(db.Boolean, default=False)
+    # TODO: see how this query looks, and if it needs performance tuning
+    tweets = db.relationship('Tweet', backref='author', lazy='dynamic')
     
     @property
     def password(self):
@@ -35,7 +33,21 @@ class User(UserMixin, db.Model):
         return f'<User {self.username}>'
 
 
-@login_manager.user_loader
-def load_user(user_id):
-    return User.query.get(int(user_id))
+class Tweet(db.Model):
+    __tablename__ = 'tweet'
+    id = db.Column(db.Integer, primary_key=True)
+    user = db.Column(db.Integer, db.ForeignKey('user.id'))
+    body = db.Column(db.Text)
+    dateadded = db.Column(db.DateTime, index=True, default=datetime.utcnow)
+    # TODO: see how this query looks, and if it needs performance tuning
+    replies = db.relationship('Reply', backref='reply', lazy='dynamic')
 
+
+class Reply(db.Model):
+    __tablename__ = 'reply'
+    id = db.Column(db.Integer, primary_key=True)
+    body = db.Column(db.Text)
+    dateadded = db.Column(db.DateTime, index=True, default=datetime.utcnow)
+    user = db.Column(db.Integer, db.ForeignKey('user.id'))
+    tweet = db.Column(db.Integer, db.ForeignKey('tweet.id'))
+    parent_reply = db.Column(db.Integer, db.ForeignKey('reply.id'), nullable=True)
