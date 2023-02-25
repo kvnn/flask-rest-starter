@@ -1,16 +1,16 @@
 from marshmallow import Schema, fields, validate
 
 
-class CreateSignupInputSchema(Schema):
+class SignupInput(Schema):
     email = fields.Email(required=True)
     password = fields.Str(required=True, validate=validate.Length(min=6))
     password2 = fields.Str(required=True, validate=validate.Length(min=6))
 
 
-class CreateLoginInputSchema(Schema):
+class LoginInput(Schema):
     email = fields.Email(required=True)
     password = fields.Str(required=True, validate=validate.Length(min=6))
 
 
-class ResetPasswordInputSchema(Schema):
+class PasswordInput(Schema):
     password = fields.Str(required=True, validate=validate.Length(min=6))

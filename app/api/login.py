@@ -7,7 +7,7 @@ from flask_sqlalchemy import SQLAlchemy
 
 from . import api
 from ..models import db, User
-from ..user_validation import CreateLoginInputSchema
+from ..user_validation import LoginInput
 from ..utils.common import generate_response
 
 
@@ -20,7 +20,7 @@ def login_user(request, input_data):
     :param input_data: The data that is passed to the function
     :return: A dictionary with the keys: data, message, status
     """
-    create_validation_schema = CreateLoginInputSchema()
+    create_validation_schema = LoginInput()
     errors = create_validation_schema.validate(input_data)
     if errors:
         return generate_response(message=errors)

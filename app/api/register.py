@@ -5,7 +5,7 @@ from flask_sqlalchemy import SQLAlchemy
 
 from . import api
 from ..models import db, User
-from ..user_validation import CreateSignupInputSchema
+from ..user_validation import SignupInput
 from ..utils.common import generate_response
 
 
@@ -16,7 +16,7 @@ def create_user(request, input_data):
     :param input_data: This is the data that is passed to the function
     :return: A response object
     """
-    create_validation_schema = CreateSignupInputSchema()
+    create_validation_schema = SignupInput()
     errors = create_validation_schema.validate(input_data)
     if errors:
         return generate_response(message=errors)
