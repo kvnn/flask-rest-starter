@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 import json
 
 import jwt
@@ -27,14 +27,15 @@ def login_user(request, input_data):
 
     get_user = User.query.filter_by(email=input_data.get("email")).first()
     if get_user is None:
+        current_app.logger.info('[login] user not found')
         return generate_response(message="User not found", status=400)
-    if get_user.check_password(input_data.get("password")):
+    if get_user.verify_password(input_data.get("password")):
+        current_app.logger.info('[login] creating token')
         token = jwt.encode(
             {
                 "id": get_user.id,
                 "email": get_user.email,
-                "username": get_user.username,
-                "exp": datetime.datetime.utcnow() + datetime.timedelta(minutes=30),
+                "exp": datetime.utcnow() + timedelta(minutes=300),
             },
             current_app.config["SECRET_KEY"],
         )
@@ -43,6 +44,7 @@ def login_user(request, input_data):
             data=input_data, message="User login successfully", status=200
         )
     else:
+        current_app.logger.info('[login] wrong password')
         return generate_response(
             message="Password is wrong", status=400
         )
