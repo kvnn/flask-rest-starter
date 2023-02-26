@@ -66,8 +66,8 @@ def update_tweet(id, input_data):
     )
 
 
-def delete_tweet(id):
-    user,tweet = _auth_user_for_tweet(user, id)
+def delete_tweet(id, input_data):
+    user, tweet = _auth_user_for_tweet(input_data.get('auth_token'), id)
 
     db.session.delete(tweet)
     db.session.commit()
@@ -85,7 +85,11 @@ def delete_tweet(id):
 @api.route('/tweet/<id>/', methods=['PUT', 'DELETE'])
 def route_tweet(id):
     auth_token = request.headers.get('Authorization')
-    input_data = json.loads(request.data)
+    if len(request.data):
+        input_data = json.loads(request.data)
+    else:
+        input_data = {}
+
     input_data['auth_token'] = auth_token
 
     try:

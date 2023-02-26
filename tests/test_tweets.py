@@ -53,8 +53,13 @@ class FlaskClientTestCase(unittest.TestCase):
         # update
         data['body'] = 'new content'
         response = self.client.put(f'/api/v1/tweet/{id}/', json=data, headers=headers, follow_redirects=True)
-        tweet = Tweet.query.filter_by(id=id)[0]
         self.assertEqual(response.status_code, 200)
         tweet = Tweet.query.filter_by(id=id)[0]
         self.assertEqual(tweet.body, data['body'])
+
+        # delete
+        response = self.client.delete(f'/api/v1/tweet/{id}/', headers=headers, follow_redirects=True)
+        self.assertEqual(response.status_code, 200)
+        tweets = Tweet.query.filter_by(id=id)
+        self.assertEqual(tweets.count(), 0)
 
