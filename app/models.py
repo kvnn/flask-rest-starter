@@ -5,6 +5,8 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
 
+from .utils.common import TokenGenerator
+
 
 db = SQLAlchemy()
 
@@ -13,7 +15,9 @@ class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String(64), unique=True, index=True)
     password_hash = db.Column(db.String(128))
-    confirmed = db.Column(db.Boolean, default=False)
+    dateadded = db.Column(db.DateTime, index=True, default=datetime.utcnow)
+    dateupdated = db.Column(db.DateTime, index=True, onupdate=datetime.utcnow)
+
     # TODO: see how this query looks, and if it needs performance tuning
     tweets = db.relationship('Tweet', backref='author', lazy='dynamic')
     
@@ -27,7 +31,12 @@ class User(UserMixin, db.Model):
 
     def verify_password(self, password):
         return check_password_hash(self.password_hash, password)
-
+    
+    @classmethod
+    def get_from_bearer_token(self, auth_token):
+        auth_token = auth_token.replace('Bearer ', '')
+        token = TokenGenerator.decode_token(auth_token)
+        return User.query.filter_by(id=token.get('id')).first()
 
     def __repr__(self):
         return f'<User {self.username}>'
@@ -39,6 +48,7 @@ class Tweet(db.Model):
     user = db.Column(db.Integer, db.ForeignKey('user.id'))
     body = db.Column(db.Text)
     dateadded = db.Column(db.DateTime, index=True, default=datetime.utcnow)
+    dateupdated = db.Column(db.DateTime, index=True, onupdate=datetime.utcnow)
     # TODO: see how this query looks, and if it needs performance tuning
     replies = db.relationship('Reply', backref='reply', lazy='dynamic')
 
