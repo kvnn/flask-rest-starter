@@ -45,19 +45,23 @@ class User(UserMixin, db.Model):
 class Tweet(db.Model):
     __tablename__ = 'tweet'
     id = db.Column(db.Integer, primary_key=True)
-    user = db.Column(db.Integer, db.ForeignKey('user.id'))
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     body = db.Column(db.Text)
     dateadded = db.Column(db.DateTime, index=True, default=datetime.utcnow)
     dateupdated = db.Column(db.DateTime, index=True, onupdate=datetime.utcnow)
-    # TODO: see how this query looks, and if it needs performance tuning
-    replies = db.relationship('Reply', backref='reply', lazy='dynamic')
+    parent_id = db.Column(db.Integer, db.ForeignKey('tweet.id'), nullable=True)
+    children = db.relationship("Tweet", backref=db.backref("parent", remote_side=[id]))
 
 
-class Reply(db.Model):
-    __tablename__ = 'reply'
+class Like(db.Model):
+    __tablename__ = 'like'
     id = db.Column(db.Integer, primary_key=True)
-    body = db.Column(db.Text)
-    dateadded = db.Column(db.DateTime, index=True, default=datetime.utcnow)
-    user = db.Column(db.Integer, db.ForeignKey('user.id'))
-    tweet = db.Column(db.Integer, db.ForeignKey('tweet.id'))
-    parent_reply = db.Column(db.Integer, db.ForeignKey('reply.id'), nullable=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    tweet_id = db.Column(db.Integer, db.ForeignKey('tweet.id'), nullable=True)
+
+
+class Retweet(db.Model):
+    __tablename__ = 'retweet'
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    tweet_id = db.Column(db.Integer, db.ForeignKey('tweet.id'))

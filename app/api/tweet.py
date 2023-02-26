@@ -21,7 +21,7 @@ def _auth_user_for_tweet(auth_token, tweet_id=None):
         raise Exception("No record found with this email. please signup first.")
     if tweet_id:
         tweet = Tweet.query.filter_by(id=tweet_id).first()
-        if tweet.user != user.id:
+        if tweet.user_id != user.id:
             current_app.logger.info('[tweet] user is not the owner of this tweet')
             raise AuthError("Provided token cannot modify this tweet.")
     return user, tweet
@@ -37,7 +37,7 @@ def _validate_tweet(input_data):
 def create_tweet(input_data):
     _validate_tweet(input_data)
     user, noner = _auth_user_for_tweet(input_data.get('auth_token'))
-    tweet = Tweet(user=user.id, body=input_data['body'])
+    tweet = Tweet(user_id=user.id, body=input_data['body'], parent_id=input_data.get('parent_id'))
     db.session.add(tweet)
     db.session.commit()
 
