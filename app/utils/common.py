@@ -3,7 +3,11 @@ from datetime import datetime, timedelta, timezone
 from flask import current_app
 import jwt
 
+class AuthError(Exception):
+    pass
+
 def generate_response(data=None, message=None, status=400):
+    # TODO: deprecate
     """
     It takes in a data, message, and status, and returns a dictionary with the data, message, and status
     

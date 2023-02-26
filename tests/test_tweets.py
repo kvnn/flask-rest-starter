@@ -8,6 +8,8 @@ from app.models import User, Tweet
 LOGIN_USER_EMAIL = 'jane@example.com'
 LOGIN_USER_PW = 'anotherpassword'
 
+LOGIN_USER_EMAIL_2 = 'jackson@example.com'
+
 class FlaskClientTestCase(unittest.TestCase):
     def setUp(self):
         self.app = create_app('testing')
@@ -62,4 +64,26 @@ class FlaskClientTestCase(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         tweets = Tweet.query.filter_by(id=id)
         self.assertEqual(tweets.count(), 0)
+    
+    def test_tweet_auth(self):
+        # create tweet for user 2
+        user = User(email=LOGIN_USER_EMAIL_2, password=LOGIN_USER_PW)
+        db.session.add(user)
+        db.session.commit()
+        orig_body = 'body'
+        tweet = Tweet(user=user.id, body=orig_body)
+        db.session.add(tweet)
+        db.session.commit()
 
+        # try update from user 1
+        data = {
+            'body':'very new body'
+        }
+        auth_token = self._get_tweet_user_token()
+        headers = {
+            'Authorization': f'Bearer {auth_token}'
+        }
+        response = self.client.put(f'/api/v1/tweet/{tweet.id}/', json=data, headers=headers, follow_redirects=True)
+        self.assertEqual(response.status_code, 401)
+        tweet = Tweet.query.filter_by(id=tweet.id)[0]
+        self.assertEqual(tweet.body, orig_body)
