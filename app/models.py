@@ -53,6 +53,17 @@ class Tweet(db.Model):
     children = db.relationship("Tweet", backref=db.backref("parent", remote_side=[id]))
     likes = db.relationship("Like", backref=db.backref("like"))
 
+    def to_json(self):
+        return {
+            'id': self.id,
+            'body': self.body,
+            'dateadded': self.dateadded,
+            'dateupdated': self.dateupdated,
+            'children': self.children,
+            # TODO: is there a more efficient way to find this?
+            'num_likes': len(self.likes)
+        }
+
 
 class Like(db.Model):
     __tablename__ = 'like'

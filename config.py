@@ -7,6 +7,7 @@ class Config:
     SSL_REDIRECT = False
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     SQLALCHEMY_RECORD_QUERIES = True
+    TWEETS_PER_PAGE = 50
 
     @staticmethod
     def init_app(app):
@@ -17,14 +18,14 @@ class DevelopmentConfig(Config):
     DEBUG = True
     SQLALCHEMY_DATABASE_URI = os.environ.get('DEV_DATABASE_URL') or \
         'sqlite:///' + os.path.join(basedir, 'data-dev.sqlite')
+    TWEETS_PER_PAGE = 3 # make pagination easier to test
 
 
 class DefaultConfig(DevelopmentConfig):
     pass
 
 
-class TestingConfig(Config):
-    DEBUG = True
+class TestingConfig(DevelopmentConfig):
     TESTING = True
     SQLALCHEMY_DATABASE_URI = os.environ.get('TEST_DATABASE_URL') or \
         'sqlite://'

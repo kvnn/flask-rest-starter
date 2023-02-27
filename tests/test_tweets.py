@@ -1,5 +1,6 @@
 import json
 import unittest
+from urllib.parse import urlsplit, parse_qs
 
 from app import create_app, db
 from app.models import User, Tweet
@@ -136,6 +137,37 @@ class FlaskClientTestCase(unittest.TestCase):
         children_ids = [child.id for child in tweet.children]
         self.assertTrue(reply_id_1 in children_ids and reply_id_2 in children_ids)
     
+    def test_pagination(self):
+        num_tweets = 13
+        # Create tweets
+        user_id, auth_token = self._create_user_get_token({
+            "email": LOGIN_USER_EMAIL,
+            "password": LOGIN_USER_PW
+        })
+        for i in range(1, num_tweets+1):
+            tweet = Tweet(user_id=user_id, body=f'TWEET {i} BODY')
+            db.session.add(tweet)
+            db.session.commit()
+
+        tweets_per_page = self.app.config['TWEETS_PER_PAGE']
+        last_page = 1 + num_tweets // tweets_per_page
+        remainder = num_tweets % tweets_per_page
+        query_data = {}
+        path = '/api/v1/tweets/'
+        for i in range(1, last_page):
+            page = self.client.get(path, query_string=query_data)
+            data = json.loads(page.data)
+            split_url = urlsplit(data.get('next'))
+            path = split_url.path
+            query = split_url.query
+            params = parse_qs(query)
+            query_data = {k: int(v[0]) for k, v in params.items()}
+            if i == last_page:
+                self.assertEqual(remainder, len(data['tweets']))
+            else:
+                self.assertEqual(tweets_per_page, len(data['tweets']))
+
+
     def test_like_lifecycle(self):
         # Create Tweet
         user_id, auth_token = self._create_user_get_token({

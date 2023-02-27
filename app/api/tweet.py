@@ -2,7 +2,7 @@ from datetime import datetime, timedelta
 import json
 import traceback
 
-from flask import Flask, make_response, current_app, request, jsonify, session
+from flask import Flask, make_response, current_app, request, jsonify, session, url_for
 from flask_sqlalchemy import SQLAlchemy
 
 from . import api
@@ -104,6 +104,26 @@ def delete_like(input_data):
     return {
         'like_id': like.id
     }, 200
+
+@api.route('/tweets/', methods=['GET'])
+def get_tweets():
+    page = request.args.get('page', 1, type=int)
+    pagination = Tweet.query.paginate(
+        page=page, per_page=current_app.config['TWEETS_PER_PAGE'],
+        error_out=False)
+    tweets = pagination.items
+    prev = None
+    if pagination.has_prev:
+        prev = url_for('api.get_tweets', page=page-1)
+    next = None
+    if pagination.has_next:
+        next = url_for('api.get_tweets', page=page+1)
+    return jsonify({
+        'tweets': [tweet.to_json() for tweet in tweets],
+        'prev': prev,
+        'next': next,
+        'count': pagination.total
+    })
 
 @api.route('/tweet/', methods=['POST'], defaults={'id': None})
 @api.route('/tweet/<id>/', methods=['PUT', 'DELETE'])
