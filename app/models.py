@@ -51,6 +51,7 @@ class Tweet(db.Model):
     dateupdated = db.Column(db.DateTime, index=True, onupdate=datetime.utcnow)
     parent_id = db.Column(db.Integer, db.ForeignKey('tweet.id'), nullable=True)
     children = db.relationship("Tweet", backref=db.backref("parent", remote_side=[id]))
+    likes = db.relationship("Like", backref=db.backref("like"))
 
 
 class Like(db.Model):
@@ -58,6 +59,9 @@ class Like(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     tweet_id = db.Column(db.Integer, db.ForeignKey('tweet.id'), nullable=True)
+    __table_args__ = (
+        db.UniqueConstraint('user_id', 'tweet_id', name='uix_like__user_id__tweet_id'),
+    )
 
 
 class Retweet(db.Model):

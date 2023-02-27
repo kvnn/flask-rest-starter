@@ -135,3 +135,40 @@ class FlaskClientTestCase(unittest.TestCase):
         db.session.refresh(tweet)
         children_ids = [child.id for child in tweet.children]
         self.assertTrue(reply_id_1 in children_ids and reply_id_2 in children_ids)
+    
+    def test_like_lifecycle(self):
+        # Create Tweet
+        user_id, auth_token = self._create_user_get_token({
+            "email": LOGIN_USER_EMAIL,
+            "password": LOGIN_USER_PW
+        })
+        headers = {
+            'Authorization': f'Bearer {auth_token}'
+        }
+        tweet = Tweet(user_id=user_id, body='ORIGINAL TWEET BODY')
+        db.session.add(tweet)
+        db.session.commit()
+
+        # Create Like via API
+        user_id, auth_token = self._create_user_get_token({
+            "email": LOGIN_USER_EMAIL_2,
+            "password": LOGIN_USER_PW
+        })
+        headers = {
+            'Authorization': f'Bearer {auth_token}'
+        }
+        data = {'tweet_id': tweet.id}
+        response = self.client.post(f'/api/v1/tweet/like/', json=data, headers=headers, follow_redirects=True)
+        self.assertEqual(response.status_code, 201)
+
+        like_id = json.loads(response.data)['data']['like_id']
+        tweet = Tweet.query.filter_by(id=tweet.id)[0]
+        self.assertTrue(like_id in [like.id for like in tweet.likes])
+
+        # Delete Like via API
+        data = {
+            'like_id': like_id
+        }
+        response = self.client.delete(f'/api/v1/tweet/like/', json=data, headers=headers, follow_redirects=True)
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(like_id not in [like.id for like in tweet.likes])
