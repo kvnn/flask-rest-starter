@@ -2,7 +2,7 @@
 
 
 ## Quickstart
-1. `git clone flask-rest-starter`
+1. `git clone git@github.com:kvnn/flask-rest-starter.git`
 2. `cd flask-rest-starter`
 3. `python3 -m venv venv`
 4. `source venv/bin/activate`
