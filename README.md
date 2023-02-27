@@ -17,7 +17,7 @@
 curl --location --request POST '0.0.0.0:3000/api/v1/auth/register/' \
 --header 'Content-Type: application/json' \
 --data-raw '{
-            "email": "john2@example.com",
+            "email": "john@example.com",
             "password": "catcat!",
             "password2": "catcat!"
         }'
