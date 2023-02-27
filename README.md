@@ -53,7 +53,7 @@ curl --location --request POST '0.0.0.0:3000/api/v1/tweet/' \
 6. Like Tweet #1
 ```
 curl --location --request POST '0.0.0.0:3000/api/v1/tweet/like/' \
---header 'Authorization: Bearer {TOKEN_VALUE}}' \
+--header 'Authorization: Bearer {TOKEN_VALUE}' \
 --header 'Content-Type: application/json' \
 --data-raw '{"tweet_id": 1}'
 ```
