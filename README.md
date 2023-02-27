@@ -10,7 +10,7 @@
 6. `python3 -m unittest discover -s tests -p 'test_*.py'`
 
 
-# Running the server, playing around
+## Running the server, playing around
 1. `flask run --debug --host=0.0.0.0 --port 3000`
 2. Register
 ```
