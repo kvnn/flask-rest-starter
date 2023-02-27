@@ -1,11 +1,16 @@
 from logging.config import dictConfig
+import os
 
 from flask import Flask, request, jsonify, session
+from dotenv import load_dotenv
 
 from config import config
 from .api import api as api_blueprint
 from .models import db
 
+dotenv_path = os.path.join(os.path.dirname(__file__), '.env')
+if os.path.exists(dotenv_path):
+    load_dotenv(dotenv_path)
 
 
 dictConfig({
@@ -30,6 +35,10 @@ def create_app(config_name='default'):
     config[config_name].init_app(app)
 
     db.init_app(app)
+
+    if config_name in ['default', 'development', 'testing']:
+        with app.app_context():
+            db.create_all()
 
     app.register_blueprint(api_blueprint, url_prefix='/api/v1')
 

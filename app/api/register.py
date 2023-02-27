@@ -22,23 +22,23 @@ def create_user(request, input_data):
         return generate_response(message=errors)
     email_exists = User.query.filter_by(email=input_data.get("email")).first()
     if email_exists:
-        return generate_response(
-            message="Email  already taken", status=400
-        )
+        return {
+            'message':"Email  already taken"
+        }, 400
 
     user = User(email=input_data['email'], password=input_data['password'])
     db.session.add(user)
     db.session.commit()
     # token = user.generate_confirmation_token()
     del input_data["password"]
-    return generate_response(
-        data=input_data, message="User Created", status=201
-    )
+    return {
+        'message': "User Created"
+    }, 201
 
 
 
 @api.route('/auth/register/', methods=['POST'])
 def route_register():
     input_data = json.loads(request.data)
-    response, status = create_user(request, input_data)
-    return make_response(response, status)
+    return_data, status = create_user(request, input_data)
+    return make_response({'data': return_data}, status)

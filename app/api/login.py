@@ -28,7 +28,9 @@ def login_user(request, input_data):
     get_user = User.query.filter_by(email=input_data.get("email")).first()
     if get_user is None:
         current_app.logger.info('[login] user not found')
-        return generate_response(message="User not found", status=400)
+        return {
+            'message':"User not found"
+        }, 400
     if get_user.verify_password(input_data.get("password")):
         current_app.logger.info('[login] creating token')
         token = jwt.encode(
@@ -40,18 +42,19 @@ def login_user(request, input_data):
             current_app.config["SECRET_KEY"],
         )
         input_data["token"] = token
-        return generate_response(
-            data=input_data, message="User login successfully", status=200
-        )
+        return {
+            'message': "Logged in",
+            'token': token
+        }, 200
     else:
         current_app.logger.info('[login] wrong password')
-        return generate_response(
-            message="Password is wrong", status=400
-        )
+        return {
+            'message': "Wrong Password"
+        }, 400
 
 
 @api.route('/auth/login/', methods=['POST'])
 def route_login():
     input_data = json.loads(request.data)
-    response, status = login_user(request, input_data)
-    return make_response(response, status)
+    return_data, status = login_user(request, input_data)
+    return make_response({'data': return_data}, status)

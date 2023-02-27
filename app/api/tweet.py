@@ -108,7 +108,7 @@ def delete_like(input_data):
 @api.route('/tweets/', methods=['GET'])
 def get_tweets():
     page = request.args.get('page', 1, type=int)
-    pagination = Tweet.query.paginate(
+    pagination = Tweet.query.order_by(Tweet.dateadded.desc()).paginate(
         page=page, per_page=current_app.config['TWEETS_PER_PAGE'],
         error_out=False)
     tweets = pagination.items

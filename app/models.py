@@ -59,7 +59,8 @@ class Tweet(db.Model):
             'body': self.body,
             'dateadded': self.dateadded,
             'dateupdated': self.dateupdated,
-            'children': self.children,
+            'children': [child.id for child in self.children],
+            'parent_id': self.parent_id,
             # TODO: is there a more efficient way to find this?
             'num_likes': len(self.likes)
         }
